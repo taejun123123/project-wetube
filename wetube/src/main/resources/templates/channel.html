@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layout.html}">
+<head>
+<meta charset="UTF-8">
+<title>WeTube</title>
+<link rel="stylesheet" href="/css/tap.css">
+<style>
+body {
+	font-family: Arial, sans-serif;
+	margin: 0;
+	padding: 0;
+	background-color: #f9f9f9;
+}
+
+.container {
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: 20px;
+}
+
+.profile {
+	display: flex;
+	align-items: center;
+	margin-bottom: 20px;
+	padding: 20px;
+	border-radius: 8px;
+	background-color: #f9f9f9;
+}
+
+.profile img {
+	width: 160px;
+	height: 160px;
+	border-radius: 50%;
+	object-fit: cover;
+	margin-right: 20px;
+}
+
+.profile-info h1 {
+	font-size: 32px;
+	font-weight: 700;
+	margin: 0;
+	color: #0F0F0F;
+}
+
+.subscribe-button {
+	padding: 10px 20px;
+	background-color: #cc0000;
+	color: #fff;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 14px;
+	margin-top: 10px;
+}
+
+.tabs {
+	display: flex;
+	gap: 15px;
+	margin: 20px 0;
+	border-bottom: 2px solid #eee;
+}
+.tabs a {
+    text-decoration: none;
+    padding: 10px 15px;
+    color: #333;
+    font-size: 14px;
+    border-bottom: 2px solid transparent; /* 기본 밑줄 제거 */
+    transition: border-color 0.3s, color 0.3s; /* 부드러운 전환 효과 */
+}
+
+.tabs a.active {
+    border-bottom: 2px solid #cc0000; /* 밑줄 색상 강조 */
+    color: #cc0000; /* 글자 색상 강조 */
+}
+
+.tabs a:hover {
+    border-bottom: 2px solid #cc0000;
+    color: #cc0000;
+}
+.video-section {
+	margin-top: 20px;
+}
+
+.video-section h1 {
+	font-size: 20px;
+	font-weight: 700;
+	width: 120px;
+	height: 28px;
+}
+
+.video-wrapper {
+	display: flex;
+	align-items: center;
+	position: relative;
+	padding-bottom: 20px;
+}
+.video-main{
+    border-bottom: 1px solid #ccc;
+   	margin-bottom: 20px;
+}
+.video-container {
+	display: flex;
+	gap: 10px;
+	overflow-x: hidden;
+	scroll-behavior: smooth;
+	padding: 10px 0;
+	width: 100%;
+}
+
+.video-item {
+	width: 220px;
+	flex-shrink: 0;
+	position: relative;
+	background-color: #fff;
+	border-radius: 8px;
+	overflow: hidden;
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.video-item:hover{
+	cursor: pointer;
+}
+.video-item video {
+	width: 100%;
+	height: 150px;
+	object-fit: cover;
+	border-radius: 8px;
+}
+
+.duration {
+	position: absolute;
+	bottom: 5px;
+	right: 5px;
+	background-color: rgba(0, 0, 0, 0.8);
+	color: #fff;
+	padding: 2px 5px;
+	font-size: 12px;
+	border-radius: 3px;
+	z-index: 10;
+}
+
+.video-container-body {
+	position: relative; /* duration 위치를 설정하기 위해 부모 요소가 상대 위치여야 함 */
+}
+
+.arrow {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	background-color: #f1f1f1;
+	border: none;
+	font-size: 20px;
+	cursor: pointer;
+	z-index: 100;
+}
+
+.arrow:hover {
+	background-color: #ddd;
+}
+
+.arrow.left {
+	left: -40px;
+}
+
+.arrow.right {
+	right: -40px;
+}
+
+.title {
+	font-weight: bold;
+	margin: 5px;
+}
+
+.details {
+	margin: 0 5px 5px;
+	color: #777;
+	font-size: 14px;
+}
+</style>
+<script type="text/javascript">
+$(document).ready(function() {
+    const $videoContainer = $('.video-container');
+
+    function scrollLeft() {
+        if ($videoContainer.length) {
+            $videoContainer.scrollLeft($videoContainer.scrollLeft() - 300);
+        }
+    }
+
+    function scrollRight() {
+        if ($videoContainer.length) {
+            $videoContainer.scrollLeft($videoContainer.scrollLeft() + 300);
+        }
+    }
+
+    $('.arrow.left').click(scrollLeft);
+    $('.arrow.right').click(scrollRight);
+
+    // 모든 .video-body 요소 선택
+    $('.video-body').each(function() {
+        const $video = $(this);
+
+        // 메타데이터 로드 이벤트 처리
+        $video.on('loadedmetadata', function() {
+            const duration = Math.floor(this.duration); // 총 길이(초)
+            const minutes = Math.floor(duration / 60);  // 분
+            const seconds = duration % 60;              // 초
+
+            // 포맷: 2자리 숫자로 표시
+            const formattedTime = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+            // 길이 표시 엘리먼트 추가
+            const $durationElement = $('<span>').addClass('duration').text(formattedTime);
+
+            // 비디오 부모 요소에 추가
+            $video.parent().append($durationElement);
+        });
+    });
+
+    // 모든 .video-item 처리 (업로드 날짜와 조회수 업데이트)
+    $('.video-item').each(function() {
+        const $item = $(this);
+        const createAt = $item.find(".createAt").text().trim(); // 업로드 날짜 가져오기
+        const today = new Date(); // 현재 날짜
+
+        // 'createAt'을 Date 객체로 변환
+        const createAtDate = new Date(createAt);
+
+        // 오늘 날짜를 Date 객체로 변환
+        const year = today.getFullYear();
+        const month = (today.getMonth() + 1).toString().padStart(2, '0');
+        const day = today.getDate().toString().padStart(2, '0');
+        const now = new Date(`${year}-${month}-${day}`);
+
+        // 날짜 차이 계산 (일 단위)
+        const diffTime = now - createAtDate; // 밀리초 차이
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)); // 일 단위 변환
+
+        // 날짜 차이가 0일일 경우 "오늘", 아니면 날짜 차이 출력
+        const dateDisplay = diffDays === 0 ? "오늘" : `${diffDays}일 전`;
+
+        // 조회수 텍스트 가져오기
+        const hitText = $item.find('.hit').text().trim();
+
+        // 결과 삽입
+        const $videoMeta = $item.find('.details');
+        $videoMeta.html(`조회수 <span style="display: inline-block;">${hitText}</span>회 • ${dateDisplay}`);
+    });
+
+    // 클릭 이벤트
+    $(".video-item").click(function() {
+        let id = $(this).data("id");
+        //alert(id);
+        location = "/watch?id="+id;
+    });
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id');
+    $(".tabs_home").click(function(){
+    	location = "/channel?id="+id;
+    });
+    $(".tabs_videos").click(function(){
+    	location = "/channel/videos?id="+id;
+    });
+    const currentPath = window.location.pathname;
+    $(".tabs a").click(function (event) {
+        $(".tabs a").removeClass("active"); // 모든 탭의 active 클래스 제거
+        $(this).addClass("active"); // 클릭된 탭에 active 클래스 추가
+    });
+    if (currentPath.includes("/channel/videos")) {
+        $(".tabs_videos").addClass("active");
+    } else if (currentPath.includes("/channel")) {
+        $(".tabs_home").addClass("active");
+    }
+});
+</script>
+</head>
+<body>
+	<section layout:fragment="content">
+		<div class="container">
+			<div class="profile">
+				<img th:src="@{${channel.userProfile}}" alt="Profile">
+				<div class="profile-info">
+					<h1 th:text="${channel.userNickname}"></h1>
+					<p th:text="'구독자 0명 • 동영상 ' + ${#lists.size(channelList)} + '개'"></p>
+					<button class="subscribe-button">구독</button>
+				</div>
+			</div>
+
+			<nav class="tabs">
+				<a href="#" class="tabs_home">홈</a> <a href="#" class="tabs_videos">동영상</a> <a href="#">재생목록</a> <a
+					href="#">커뮤니티</a>
+			</nav>
+
+			<div class="video-section">
+				<h1>동영상</h1>
+				<div class="video-wrapper video-main">
+					<button class="arrow left" onclick="scrollLeft()">&#9664;</button>
+					<div class="video-container">
+						<div class="video-item"th:each="list : ${channelList}" th:data-id="${list.id}">
+							<div class="video-container-body">
+								<video th:src="@{${list.saved_path}+'#t=2.0'}" class="video-body"></video>
+								<span class="duration">0:00</span>
+							</div>
+							<p class="title" th:text="${list.title}"></p>
+							<p class="details"></p>
+							<div class="hit" th:text="${list.hit}" style="display: none"></div>
+							<div class="createAt" th:text="${#temporals.format(list.createdAt, 'yyyy-MM-dd')}" style="display: none"></div>
+						</div>
+						<!-- 나머지 동영상 추가 -->
+					</div>
+					<button class="arrow right" onclick="scrollRight()">&#9654;</button>
+				</div>
+				<h1>인기 동영상</h1>
+				<div class="video-wrapper">
+					<button class="arrow left" onclick="scrollLeft()">&#9664;</button>
+					<div class="video-container">
+						<div class="video-item" th:each="list : ${ListHit}" th:data-id="${list.id}">
+							<div class="bideo-container-body">
+								<video th:src="@{${list.saved_path}+'#t=2.0'}" class="video-body"></video>
+								<span class="duration">0:00</span>
+							</div>
+							<p class="title" th:text="${list.title}"></p>
+							<p class="details"></p>
+							<div class="hit" th:text="${list.hit}" style="display: none"></div>
+							<div class="createAt" th:text="${#temporals.format(list.createdAt, 'yyyy-MM-dd')}" style="display: none"></div>
+						</div>
+						<!-- 나머지 동영상 추가 -->
+					</div>
+					<button class="arrow right" onclick="scrollRight()">&#9654;</button>
+				</div>
+			</div>
+		</div>
+	</section>
+</body>
+</html>

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout.html}">
+<head>
+    <meta charset="UTF-8">
+    <title>WeTube</title>
+    <link rel="stylesheet" href="/css/tap.css">
+    <style type="text/css">
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .video-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding: 20px;
+        }
+        .video-item {
+            display: flex;
+            gap: 15px;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 20px;
+        }
+        .video-thumbnail {
+            position: relative;
+            width: 300px;
+            height: 180px;
+        }
+        .video-thumbnail:hover{
+           cursor: pointer;
+        }
+        .video-thumbnail video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .video-duration {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        .video-details {
+            flex: 1;
+        }
+        .video-details:hover {
+            cursor: pointer;
+        }
+        .video-title {
+            font-size: 18px; /* Increased font size */
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .video-meta {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 8px;
+        }
+        .video-description {
+            font-size: 14px;
+            color: #333;
+        }
+        .video-body:hover{
+        cursor: pointer;
+        }
+        .video-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        .profile-picture {
+            width: 32px; /* Reduced size */
+            height: 32px; /* Reduced size */
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .profile-name {
+            font-size: 12px; /* Reduced size */
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const videos = document.querySelectorAll('.video-thumbnail video');
+
+            videos.forEach(video => {
+                video.addEventListener('loadedmetadata', () => {
+                    const duration = video.duration;
+                    const minutes = Math.floor(duration / 60);
+                    const seconds = Math.floor(duration % 60);
+                    const durationText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                    video.nextElementSibling.textContent = durationText;
+                });
+            });
+			
+            const videoItems = document.querySelectorAll('.video-item'); // 모든 비디오 항목을 선택
+
+            videoItems.forEach(item => {
+                // 각 비디오 항목에서 업로드 날짜 (createAt) 가져오기
+                const createAt = item.querySelector(".createAt").textContent.trim(); // .createAt에서 텍스트 가져오기
+                const today = new Date(); // 현재 날짜
+
+                // 'createAt'을 Date 객체로 변환
+                const createAtDate = new Date(createAt);
+
+                // 년도, 월, 일
+                const year = today.getFullYear();
+                const month = (today.getMonth() + 1).toString().padStart(2, '0');
+                const day = today.getDate().toString().padStart(2, '0');
+                const now = new Date(`${year}-${month}-${day}`); // today를 Date 객체로 변환
+
+//                 console.log("현재 날짜 " + now);
+//                 console.log("업로드 된 날짜 " + createAtDate);
+
+                // 날짜 차이 계산 (일 단위)
+                const diffTime = now - createAtDate; // 밀리초 차이
+                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)); // 밀리초를 일 단위로 변환
+
+                // 날짜 차이가 0일일 경우 "오늘", 아니면 날짜 차이 출력
+                const dateDisplay = diffDays === 0 ? "오늘" : `${diffDays}일 전`;
+
+                // 결과를 해당 비디오 항목에 삽입 (예: "0일 전", "오늘", "3일 전" 등)
+                const videoMeta = item.querySelector('.video-meta');
+                videoMeta.innerHTML = `조회수 <p style="display: inline-block;">${item.querySelector('.video-meta p').textContent.trim()}</p>회 • ${dateDisplay}`;
+            });
+            $(".video-thumbnail,.video-head,.video-body").click(function(){
+            let id=$(".video-item").data("id");
+            //alert("id:"+id);
+            location ="/watch?id="+id;
+            });
+            $(".video-profile").click(function(){
+            let id=$(this).data("user-id");
+           // alert("포로필 확인 중"+id);
+            location ="/channel?id="+id;
+            });
+        });
+    </script>
+</head>
+<body>
+<section layout:fragment="content">
+    <div class="video-list">
+        <!-- Video Item Template -->
+        <div class="video-item" th:each="list : ${searchResults}" th:data-id="${list.id}">
+            <div class="video-thumbnail">
+                <video preload="metadata" th:src="@{${list.saved_path}+'#t=2.0'}"></video>
+                <span class="video-duration">0:00</span>
+            </div>
+            <div class="video-details">
+            	<div class="video-head">
+                <div class="video-title" th:text="${list.title}"></div>
+                <div class="video-meta">
+                    조회수<p th:text=${list.hit} style="display: inline-block;"></p>회 • 0일 전
+                </div>
+                </div>
+                <div class="video-profile" th:data-user-id="${list.user_id}">
+                    <img class="profile-picture" th:src="${list.userProfile}" alt="Profile">
+                    <span class="profile-name" th:text="${list.userNickname}">User Name</span>
+                </div>
+                <div class="video-body">
+                <div class="video-description" th:text="${list.content}"></div>
+                <div class="createAt" th:text="${#temporals.format(list.createdAt, 'yyyy-MM-dd')}" style="display: none"></div>
+            	</div>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>

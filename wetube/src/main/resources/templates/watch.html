@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layout.html}">
+<head>
+<meta charset="UTF-8">
+<title>Wetube</title>
+<link rel="stylesheet" href="/css/tap.css">
+<style>
+/* 그리드 레이아웃을 사용하여 비디오와 탭 배치 */
+.video-tabs-container {
+	display: grid;
+	grid-template-columns: 70% 30%; /* 비디오 70%, 탭 30% */
+	gap: 20px; /* 비디오와 탭 사이 간격 */
+}
+
+/* 비디오 컨테이너 */
+.video-container {
+	width: 100%;
+	max-width: 1200px; /* 최대 너비 설정 */
+	padding: 10px;
+	margin-left: 50px;
+	box-sizing: border-box;
+}
+
+/* 탭 영역 */
+.videos {
+	width: 100%;
+	margin-left: 30px;
+}
+
+/* 반응형 비디오 스타일 */
+video {
+	width: 100%;
+	height: auto;
+	border-radius: 8px;
+	border: 1px solid #ddd;
+}
+
+/* 미디어 쿼리를 이용한 반응형 레이아웃 */
+@media ( max-width : 768px) {
+	.video-tabs-container {
+		grid-template-columns: 100%; /* 화면 크기가 작아지면 비디오와 탭이 세로로 나열됨 */
+	}
+	.videos {
+		margin-top: 20px; /* 비디오 아래로 탭 배치 */
+	}
+}
+.video-thumbnail-container {
+	position: relative;
+	display: inline-block;
+	width: 168px;
+	height: 94px;
+	overflow: hidden;
+	margin-bottom: -20px;
+	margin-top: 20px;
+}
+
+.video-thumbnail-container:hover {
+	cursor: pointer;
+}
+
+.video-thumbnail-container video {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	border: none;
+}
+
+@media ( max-width : 768px) {
+	.video-thumbnail-container {
+		width: 140px;
+		height: 78px;
+	}
+}
+
+/* 비디오 재생 시간 표시 */
+.video-duration {
+	position: absolute;
+	bottom: 8px;
+	right: 8px;
+	background-color: rgba(0, 0, 0, 0.7);
+	color: #fff;
+	font-size: 12px;
+	padding: 2px 6px;
+	border-radius: 4px;
+}
+
+.details {
+	display: inline-block;
+	margin-left: 5px;
+}
+
+.videos-title-container {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 16px;
+}
+
+.videos-title {
+	margin: 0;
+	font-family: Roboto, Arial, sans-serif;
+	font-size: 14px;
+	font-weight: 500;
+	
+}
+
+.videos-icon {
+	margin: 5px 0 0 70px;
+	font-size: 16px;
+	cursor: pointer;
+	color: #555;
+}
+
+.videos-UserName {
+	font-family: Roboto, Arial, sans-serif;
+	font-size: 12px;
+	font-weight: 400;
+	margin: 0;
+}
+
+.vidoes-UserHit {
+	font-family: Roboto, Arial, sans-serif;
+	font-size: 12px;
+	font-weight: 400;
+}
+
+.watch-title {
+	font-family: Roboto, Arial, sans-serif;
+	font-size: 20px;
+	font-weight: 700;
+	color:#0F0F0F;
+}
+
+.watch-content {
+    display: flex;
+    justify-content: space-between; /* 요소들이 양쪽 끝에 배치되도록 함 */
+	margin-top: 20px;
+}
+
+.profile-container {
+	display: flex;
+	align-items: center;
+	width: 360px;
+	height: 44px;
+}
+.profile-container img:hover{
+	cursor: pointer;
+}
+.watch-UserName:hover{
+	cursor: pointer;
+}
+.profile-image {
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	margin-right: 10px;
+}
+
+.profile-info {
+	margin: 15px 24px 0 0; 
+}
+.watch-UserName{
+	font-family: Roboto, Arial, sans-serif;
+	font-size: 16px;
+	font-weight: 500;
+	margin: 0;
+	width: 93px;
+	height: 22px;
+	color:#0F0F0F;
+}
+.subscriber-count {
+	font-size: 14px;
+	color: #555;
+	width: 87px;
+	height: 18px;
+}
+
+.subscribe-btn {
+	background-color: #ff0000;
+	color: white;
+	border: none;
+	padding: 5px 15px;
+	border-radius: 3px;
+	cursor: pointer;
+}
+
+.like-dislike-btns {
+  display: flex;
+  align-items: center;
+  font-family: Roboto, Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: rgb(15, 15, 15);
+  width: 400px;
+  height: 45px;
+  justify-content: flex-end; /* 오른쪽 정렬 추가 */
+  transform: translateX(450px); /* 10px 만큼 오른쪽으로 이동 */
+}
+
+.like-dislike-btns i {
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.likes-count {
+  margin-right: 10px;
+}
+
+.share-save-btn {
+  margin-right: 10px;
+}
+
+/* Adding responsiveness for smaller screens */
+@media (max-width: 768px) {
+  .like-dislike-btns {
+    justify-content: center;
+    margin-top: 10px;
+  }
+}
+
+.video-details {
+	margin-top: 20px;
+	font-size: 14px;
+	color: #777;
+	background: #F2F2F2;
+	width: 1180px;
+	height: 135px;
+	padding: 20px;
+    border-radius: 3%; 
+    min-height: 135px; /* 최소 높이 */
+}
+
+.date {
+	font-size: 12px;
+	color: #999;
+}
+.watch-videos{
+    background-attachment: scroll;
+    background-clip: border-box;
+    background-color: rgba(0, 0, 0, 0);
+    background-image: none;
+    background-origin: padding-box;
+    background-position-x: 0%;
+    background-position-y: 0%;
+    background-repeat: repeat;
+    background-size: auto;
+    border-bottom-color: rgb(0, 0, 0);
+    border-bottom-style: none;
+    border-bottom-width: 0px;
+    border-image-outset: 0;
+    border-image-repeat: stretch;
+    border-image-slice: 100%;
+    border-image-source: none;
+    border-image-width: 1;
+    border-left-color: rgb(0, 0, 0);
+    border-left-style: none;
+    border-left-width: 0px;
+    border-right-color: rgb(0, 0, 0);
+    border-right-style: none;
+    border-right-width: 0px;
+    border-top-color: rgb(0, 0, 0);
+    border-top-style: none;
+    border-top-width: 0px;
+    display: block;
+    font-family: Roboto, Arial, sans-serif;
+    font-size: 10px;
+    height: 3809.62px;
+    margin-bottom: 0px;
+    margin-left: 60px;
+    margin-right: 0px;
+    margin-top: 0px;
+    padding-bottom: 0px;
+    padding-left: 0px;
+    padding-right: 0px;
+    padding-top: 0px;
+    scrollbar-color: rgb(96, 96, 96) rgba(0, 0, 0, 0);
+    text-size-adjust: 100%;
+    unicode-bidi: isolate;
+    width: 730px;
+}
+.wt-bl{
+ background-color: #F2F2F2;
+  border: none;
+  border-radius: 30px 0 0 30px;
+  padding: 10px;
+}
+.wt-bl:hover{
+ background-color: #D5D5D5;
+ cursor: pointer;
+}
+.wt-bl-rt:hover{
+ background-color: #D5D5D5;
+ cursor: pointer;
+}
+.wt-bl-rt{
+ background-color: #F2F2F2;
+  border: none;
+  border-radius: 0 30px 30px 0 ;
+  padding: 10px;
+}
+.wt-bl-save{
+ margin-left: 15px;	
+ background-color: #F2F2F2;
+  border: none;
+  border-radius: 30%; 
+   padding: 10px;
+}
+.wt-bl-save:hover{
+ background-color: #D5D5D5;
+ cursor: pointer;
+}
+.wt-bl-share{
+ margin-left: 15px;	
+ background-color: #F2F2F2;
+  border: none;
+  border-radius: 30%; 
+   padding: 10px;
+}
+.wt-bl-share:hover{
+ background-color: #D5D5D5;
+ cursor: pointer;
+}
+.description {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-clamp: 2; /* 두 줄까지만 표시 */
+  -webkit-line-clamp: 2; /* 웹킷 브라우저 호환 */
+  white-space: normal;
+}
+/*문장이 길어지면 ...으로 잘라줌*/
+.ellipsis { 
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space:nowrap;
+  width: 800px;
+  height: 30px;
+}
+/*댓글 스타일 부분*/
+    .comments-container {
+      display: flex; /* Flexbox 적용으로 가로 정렬 */
+      align-items: center; /* 세로축 중앙 정렬 */
+      gap: 10px; /* 요소 간 간격 */
+      margin-top: 20px;
+    }
+
+    .comments-count {
+      font-family: Roboto, Arial, sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      display: inline-block; /* inline 대신 inline-block 사용 */
+      width: 120px;
+      height: 28px;
+      text-align: left; /* 텍스트 왼쪽 정렬 */
+    }
+
+    .comments-sorting {
+      width: 120px;
+      height: 28px; /* 동일한 높이로 맞춤 */
+      display: inline-block;
+      text-align: center;
+      line-height: 28px; /* 높이와 같은 값으로 텍스트를 가운데 정렬 */
+    }
+    .comments-sorting:hover {
+    cursor: pointer;
+    }
+    .comments-font{
+    font-family: Roboto, Arial, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 30px;
+    display: inline-block;
+    transform: translateY(-15px) translateX(10px); /* 위로 10px 이동 */
+    }
+.comments-profile-container {
+  display: flex;
+  align-items: center; /* 수직 중앙 정렬 */
+  gap: 10px; /* 프로필 이미지와 입력창 간의 간격 */
+  margin-top: 20px;
+  width: 100%; /* 전체 화면에 맞게 */
+  max-width: 1180px; /* 최대 너비 제한 */
+  margin-left: auto;
+  margin-right: auto; /* 중앙 정렬 */
+  box-sizing: border-box; /* 패딩 포함 */
+}
+
+.profile-image {
+  width: 40px; /* 프로필 이미지 크기 */
+  height: 40px;
+  border-radius: 50%; /* 원형으로 만들기 */
+  object-fit: cover; /* 이미지를 비율 맞추어 잘림 없이 표시 */
+}
+
+.comment-input {
+  flex-grow: 1; /* 입력창이 남은 공간을 채우도록 설정 */
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  font-size: 14px;
+  min-width: 0; /* 너무 작은 화면에서도 요소가 잘리지 않게 설정 */
+  width: 500px;
+}
+
+.comment-submit-btn {
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 14px;
+  white-space: nowrap; /* 텍스트 줄바꿈 방지 */
+}
+
+.comment-submit-btn:hover {
+  background-color: #0056b3;
+}
+
+/* 반응형 레이아웃 조정 */
+@media (max-width: 768px) {
+  .profile-image {
+    width: 35px;
+    height: 35px; /* 프로필 이미지 크기 축소 */
+  }
+
+  .comment-input {
+    font-size: 13px; /* 입력창 글자 크기 축소 */
+    padding: 6px 10px;
+  }
+
+  .comment-submit-btn {
+    font-size: 13px; /* 버튼 글자 크기 축소 */
+    padding: 6px 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-image {
+    width: 30px;
+    height: 30px; /* 더 작은 화면에서는 더 작게 */
+  }
+
+  .comment-input {
+    font-size: 12px;
+    padding: 5px 8px; /* 입력창 크기 줄임 */
+  }
+
+  .comment-submit-btn {
+    font-size: 12px;
+    padding: 5px 10px; /* 버튼 크기 줄임 */
+  }
+}
+
+/* 댓글 박스 */
+.comments-profile-content {
+  display: flex;
+  align-items: flex-start;
+  margin-top: 40px;
+  margin-bottom: 20px;
+  padding: 10px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  width: 1180px;
+  flex-shrink: 0; /* flex에서 너비 변경 방지 */
+  box-sizing: border-box; /* 패딩, 테두리를 포함한 너비 계산 */
+}
+
+.profile-image {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  margin-right: 15px;
+}
+
+.comment-content {
+  flex: 1;
+}
+
+.comment-author {
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.comment-text {
+  margin: 0;
+  color: #555;
+  font-size: 14px;
+}
+
+.comment-actions {
+  margin-top: 10px;
+}
+
+.action-button {
+  background: none;
+  border: none;
+  color: #555;
+  font-size: 14px;
+  cursor: pointer;
+  margin-right: 10px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.action-button i {
+  margin-right: 5px;
+}
+
+.action-button:hover {
+  color: #000;
+}
+
+.comments-icon {
+  color: #aaa;
+  font-size: 18px;
+  margin-left: 10px;
+  cursor: pointer;
+}
+
+.comments-icon:hover {
+  color: #000;
+}
+
+/* 댓글 반응형 너비 조정 */
+@media (max-width: 768px) {
+  .comments-profile-content {
+    width: 95%; /* 태블릿 화면에서는 너비 조정 */
+    font-size: 13px; /* 텍스트 크기 축소 */
+  }
+  .comment-text {
+    font-size: 13px; /* 글자 크기 축소 */
+  }
+}
+
+@media (max-width: 480px) {
+  .comments-profile-content {
+    width: 100%; /* 작은 화면에서는 전체 너비 */
+    padding: 8px; /* 패딩 축소 */
+    font-size: 12px; /* 글자 크기 축소 */
+  }
+  .comment-text {
+    font-size: 12px; /* 댓글 텍스트 크기 줄임 */
+  }
+}
+
+@media (max-width: 768px) {
+  .watch-title {
+   display: none; /* 화면 크기가 작아지면 숨김 */
+  }
+}
+@media (max-width: 768px) {
+  .watch-content {
+   display: none; /* 화면 크기가 작아지면 숨김 */
+  }
+}
+@media (max-width: 768px) {
+  .video-details {
+   display: none; /* 화면 크기가 작아지면 숨김 */
+  }
+}
+
+</style>
+
+<script type="text/javascript">
+document.addEventListener('DOMContentLoaded', () => {
+	  // 댓글 관련 기능
+	  const commentInput = document.querySelector('.comment-input');
+	  const commentSubmitBtn = document.querySelector('.comment-submit-btn');
+	  const commentsList = document.getElementById('comments-list');
+	  const userNickname = document.getElementById('user-nickname').value;  // 닉네임 가져오기
+	  const wetubeId = document.getElementById('user-wetubeId').value;
+	  const userProfile = document.querySelector('.profile-image').src; // 프로필 이미지 URL 가져오기
+	  const commentCountElement = document.querySelector('.comments-count'); // 댓글 개수를 표시하는 요소
+
+	  // 댓글 로드
+	  function loadComments() {
+	    if (!wetubeId) {
+	      console.error('wetubeId 값이 없습니다.');
+	      return;
+	    }
+
+	    fetch(`/comments/list?id=${wetubeId}`)
+	      .then((res) => res.json())
+	      .then((data) => {
+	        commentCountElement.textContent = `댓글 ${data.length}개`;
+	        commentsList.innerHTML = ''; // 기존 댓글 내용 초기화
+	        data.forEach((comment) => {
+	          const commentHTML = `
+	            <div class="comments-profile-content" data-comment-id="${comment.commentId}">
+	              <img src="${comment.profileImage}" alt="Profile" class="profile-image">
+	              <div class="comment-content">
+	                <p class="comment-author">@${comment.nickName}</p>
+	                <p class="comment-text">${comment.body}</p>
+	                <div class="comment-actions">
+	                  <button class="action-button like-btn" data-liked="${comment.liked}">
+	                    <i class="fa fa-thumbs-up"></i> 
+	                    <span class="like-count">${comment.commentLikes}</span>
+	                  </button>
+	                  <button class="action-button dislike-btn">
+	                    <i class="fa fa-thumbs-down"></i>
+	                  </button>
+	                  <button class="action-button edit-btn" style="display: none;">수정</button>
+	                  <button class="action-button delete-btn" style="display: none;">삭제</button>
+	                </div>
+	              </div>
+	              <i class="fa fa-ellipsis-v videos-icon comments-icon"></i>
+	            </div>
+	          `;
+	          commentsList.insertAdjacentHTML('beforeend', commentHTML);
+	        });
+
+	        // 좋아요 버튼 클릭 처리 (AJAX 포함)
+	        $('.comments-profile-content').off('click', '.like-btn').on('click', '.like-btn', function() {
+	          const likeButton = $(this);
+	          const likeCountElement = likeButton.find('.like-count');
+	          let likeCount = parseInt(likeCountElement.text());
+	          const liked = likeButton.data('liked');  // 좋아요 상태 확인
+
+	          if (liked) {
+	            // 좋아요를 누르지 않았다면 좋아요 추가 (1 증가)
+	            likeCount += 1;
+	            likeButton.data('liked', false); // 좋아요 취소 상태로 변경
+	          } else {
+	            
+	            likeCount -= 1;
+	            likeButton.data('liked', true); // 좋아요 상태로 변경
+	          }
+	       // 이미 좋아요를 눌렀다면 좋아요 취소 (1 감소)
+	          likeCountElement.text(likeCount); // 좋아요 수 업데이트
+	          const commentId = likeButton.closest('.comments-profile-content').data('commentId');
+	          updateLikeDislikeCount(commentId, likeCount, likeButton.data('liked'));
+	        });
+
+	        // 싫어요 버튼 클릭 처리 (AJAX 포함)
+	        $('.comments-profile-content').off('click', '.dislike-btn').on('click', '.dislike-btn', function() {
+	          // 싫어요 버튼의 동작이 없으므로 따로 처리하지 않음
+	        });
+	      })
+	      .catch(err => console.error('댓글 목록 조회 실패:', err));
+	  }
+
+	  // 좋아요/싫어요 수를 서버에 업데이트하는 함수 (AJAX 요청)
+	  function updateLikeDislikeCount(commentId, newLikeCount, liked) {
+	    $.ajax({
+	      url: '/comments/update-likes',
+	      method: 'POST',
+	      contentType: 'application/json',
+	      data: JSON.stringify({
+	        commentId: commentId,
+	        likeCount: newLikeCount,
+	        liked: liked  // 좋아요 상태 전달
+	      }),
+	      success: function(response) {
+	        console.log('서버에서 응답받은 데이터:', response);
+	      },
+	      error: function(err) {
+	        console.error('서버에 좋아요/싫어요 업데이트 실패:', err);
+	      }
+	    });
+	  }
+
+	  commentSubmitBtn.addEventListener('click', () => {
+	    const commentText = commentInput.value.trim();
+	    if (commentText) {
+	      fetch('/comments/create', {
+	        method: 'POST',
+	        headers: { 'Content-Type': 'application/json' },
+	        body: JSON.stringify({
+	          body: commentText,
+	          nickName: userNickname,
+	          profileImage: userProfile,
+	          wetubeId: wetubeId
+	        }),
+	      })
+	        .then(() => {
+	          commentInput.value = '';
+	          loadComments();
+	        })
+	        .catch(err => console.error('댓글 등록 실패:', err));
+	    }
+	  });
+
+	  commentsList.addEventListener('click', (e) => {
+	    const commentEl = e.target.closest('.comments-profile-content');
+	    const commentId = commentEl.dataset.commentId;
+
+	    // 댓글 삭제
+	    if (e.target.classList.contains('delete-btn')) {
+	      if (confirm('댓글을 삭제하시겠습니까?')) {
+	        fetch(`/comments/delete/${commentId}`, { method: 'DELETE' })
+	          .then(() => loadComments())
+	          .catch(err => console.error('댓글 삭제 실패:', err));
+	      }
+	    }
+
+	    // 댓글 수정
+	    if (e.target.classList.contains('edit-btn')) {
+	      const currentText = commentEl.querySelector('.comment-text').innerText;
+	      const newText = prompt('수정할 내용을 입력하세요:', currentText);
+	      if (newText) {
+	        fetch(`/comments/update/${commentId}`, {
+	          method: 'PUT',
+	          headers: { 'Content-Type': 'application/json' },
+	          body: JSON.stringify({ body: newText }),
+	        })
+	          .then(() => loadComments())
+	          .catch(err => console.error('댓글 수정 실패:', err));
+	      }
+	    }
+	  });
+
+	  loadComments(); // 초기 로드
+
+	  // 비디오 관련 기능
+	  $(".video-thumbnail-container").click(function () {
+	    let id = $(this).closest(".id_videos").data("id");
+	    location = "/watch?id=" + id;
+	  });
+
+	  $(".none-profile").click(function(){
+	    location = "/login";
+	  });
+	  $('.wt-bl').on('click', function () {
+		    const container = $(this);  // 클릭한 버튼의 요소
+		    const likesCountElement = container.find('.likes-count');  // 좋아요 수 표시
+		    let currentLikes = parseInt(likesCountElement.text());  // 현재 좋아요 수
+		    const isLiked = container.hasClass('liked');  // 이미 좋아요가 눌린 상태인지 확인
+
+		    // 상태에 따라 좋아요 수를 증가 또는 감소
+		    const newLikes = isLiked ? currentLikes - 1 : currentLikes + 1;
+
+		    // 좋아요 상태 토글 (클래스를 이용하여 상태 변경)
+		    container.toggleClass('liked');
+
+		    // AJAX로 서버에 새로운 좋아요 수 보내기
+		    $.ajax({
+		        url: '/like',
+		        method: 'POST',
+		        contentType: 'application/json',
+		        data: JSON.stringify({
+		            id: container.data('id'),
+		            liked: !isLiked  // 좋아요 상태 (true: 좋아요, false: 취소)
+		        }),
+		        success: function (response) {
+		            likesCountElement.text(response);  // 서버로부터 응답받은 좋아요 수로 업데이트
+		        },
+		        error: function () {
+		            alert("오류가 발생했습니다.");
+		        }
+		    });
+		});
+	  $('.wt-bl-share').on('click', function () {
+		    const url = window.location.href; // 현재 페이지 URL을 가져옴
+
+		    // 클립보드에 URL 복사하기
+		    navigator.clipboard.writeText(url).then(() => {
+		        alert("URL이 클립보드에 복사되었습니다!");
+		    }).catch(err => {
+		        console.error("클립보드 복사 실패", err);
+		        alert("URL 복사에 실패했습니다.");
+		    });
+		});
+	$
+		    $('.video-thumbnail-container').each(function () {
+    const $container = $(this);
+    const $video = $container.find('video');
+    const $durationEl = $container.find('.video-duration');
+
+    // 메타데이터 로드 후 길이 표시
+    $video.on('loadedmetadata', function () {
+      const duration = this.duration;
+      const minutes = Math.floor(duration / 60);
+      const seconds = Math.floor(duration % 60);
+      $durationEl.text(`${minutes}:${seconds < 10 ? '0' : ''}${seconds}`);
+    });
+  });
+	$(".profile-container img,.profile-info b").click(function(){
+		let id=$(".profile-container").data("user-id");
+		 location ="/channel?id="+id;
+	});
+	//수정 부분 
+	$(".btn-outline-success").click(function(){
+	    const urlParams = new URLSearchParams(window.location.search);
+	    const id = urlParams.get('id');
+	    
+	    location = "/updateVideo?id="+id;
+	});
+	$(".btn-outline-danger").click(function(){
+	    const urlParams = new URLSearchParams(window.location.search);
+	    const id = urlParams.get('id');  // URL에서 id 값을 가져옴
+
+	    fetch('/api/videos', {
+	        method: 'DELETE',
+	        headers: {
+	            'Content-Type': 'application/json',  // JSON 형식으로 데이터를 전송
+	        },
+	        body: JSON.stringify({ id: id })  // id 값을 JSON 형식으로 요청 본문에 추가
+	    })
+	    .then(response => {
+	        if (response.ok) {
+	            alert("영상이 삭제되었습니다.");
+	            // 성공 시 리다이렉션 또는 추가 작업
+	            window.location.href = '/';  // 예시: 영상 목록 페이지로 리다이렉트
+	        } else {
+	            alert("영상 삭제에 실패했습니다.");
+	        }
+	    })
+	    .catch(error => {
+	        console.error("삭제 중 오류 발생:", error);
+	        alert("삭제 중 오류가 발생했습니다.");
+	    });
+	    
+	});//삭제 버튼 끝
+	});
+</script>
+</head>
+<body>
+	<section layout:fragment="content">
+		<div class="video-tabs-container">
+			<div class="video-container">
+				 <video th:src="@{${view.saved_path}}" controls></video>
+			</div>
+			<!-- 우측 부분 -->
+			<div class="videos">
+				<ul class="nav nav-pills">
+					<li class="nav-item"><a class="nav-link active" data-toggle="pill" href="#home">전체</a></li>
+					<li class="nav-item"><a class="nav-link" data-toggle="pill" href="#menu1">관련 컨텐츠</a></li>
+				</ul>
+				<div class="id_videos" th:each="video : ${list}" th:data-id="${video.id}">
+				<div class="video-thumbnail-container">
+					  <!-- 동영상 썸네일 -->
+       			 <video  preload="metadata" th:src="@{${video.saved_path}+'#t=2.0'}"></video>
+					<span class="video-duration">0:00</span>
+				</div>
+				<div class="details">
+					<div class="videos-title-container">
+						<p class="videos-title"  th:text="${video.title}"></p>
+						<i class="fa fa-ellipsis-v videos-icon float-right"></i>
+					</div>
+					<p class="videos-UserName" th:text="${video.userNickname}"></p>
+					<p class="vidoes-UserHit" th:text="'조회수'+${video.hit}+'회'"></p>
+				</div>
+				</div>
+			</div>
+		</div>
+		<div class="watch-videos">
+		<div class="watch-title" th:text="${view.title}">
+		</div>
+
+		<!-- 프로필, 구독 버튼 등 -->
+		<div class="watch-content">
+			<div class="profile-container" th:data-user-id="${view.user_id}">
+				<img th:src="@{${view.userProfile}}" alt="Profile" class="profile-image">
+				<div class="profile-info">
+					<b class="watch-UserName" th:text="${view.userNickname}"></b>
+					<p class="subscriber-count" th:text="'구독자 ' + ${view.userSubscriber} + '명'"></p>
+				</div>
+				<div th:if="${isValidToken}">
+				<div th:if="${user.id} != ${view.user_id}">
+				<button class="subscribe-btn">구독</button>
+				</div>
+				<div th:if="${user.id} == ${view.user_id}">
+				<button class="btn btn-outline-success" style="width: 70px; height: 50px; font-size:12px;">동영상 수정</button>
+				<button class="btn btn-outline-danger" style="width: 70px; height: 50px; font-size:12px;">동영상 삭제</button>
+				</div>
+				
+				</div>
+				<div th:unless="${isValidToken}">
+				<button class="subscribe-btn">구독</button>
+				</div>
+			</div>
+			<div class="like-dislike-btns">
+				<div class="wt-bl" th:data-id="${view.id}">
+				<i class="fa fa-thumbs-up like-dislike-btn"></i>
+				<span class="likes-count" th:text="${view.likes}"></span>
+				</div>
+				<div class="wt-bl-rt">
+				<i class="fa fa-thumbs-down like-dislike-btn"></i>
+				</div>
+				<div class="wt-bl-share">
+				<i class="fa fa-share share-save-btn"></i>
+				<span >공유</span>
+				</div>
+				<div class="wt-bl-save">
+				<i class="fa fa-save share-save-btn"></i>
+				<span>저장</span>
+				</div>
+			</div>
+			
+		</div>
+			<div class="video-details" >
+				<p class="views-count" th:text="'조회수'+${view.hit}+'회'"></p>
+				<p class="date" th:text="${#temporals.format(view.createdAt, 'yyyy년 MM월 dd일')}"></p>
+				<div class="ellipsis" th:text="${view.content}"></div>
+			</div>
+			<!-- 댓글 전체 컨테이너 -->
+			<div class="comments-container">
+			  <div class="comments-count">댓글 10개</div>
+			  <div class="comments-sorting">
+			    <i class="material-icons" style="font-size:36px;">sort</i>
+			    <div class="comments-font">정렬 기준</div>
+			  </div>
+			</div>
+			
+			<!-- 댓글 입력 부분 -->
+			<div class="comments-profile-container">
+			<div th:if="${user != null}">
+			  <img th:src="@{${user.profile}}" alt="Profile" class="profile-image">
+			  <input type="text" class="comment-input" placeholder="댓글 추가...">
+			  <input type="hidden" id="user-nickname" th:value="${user.nickname}">
+			  <input type="hidden" id="user-wetubeId" th:value="${view.id}">
+			  <button class="comment-submit-btn">등록</button>
+			  </div>
+			</div>
+			<div class="comments-profile-container none-profile">
+			  <div th:unless="${user}">
+			  <img src="/upload/basic.png" alt="Profile" class="profile-image">
+			  <input type="text" class="comment-input" placeholder="댓글 추가...">
+			  <input type="hidden" id="user-wetubeId"  th:value="${view.id}">
+			   <input type="hidden" id="user-nickname" value=null>
+			   <button class="comment-submit-btn" style="display: none;"></button>
+			  </div>	
+			  </div>		
+			<!-- 댓글 리스트 -->
+			<div id="comments-list">
+			  <div class="comments-profile-content" data-comment-id="1">
+			    <img src="/upload/rabbit.jpg" alt="Profile" class="profile-image">
+			    <div class="comment-content">
+			      <p class="comment-author"></p>
+			      <p class="comment-text"></p>
+			      <div class="comment-actions">
+			        <button class="action-button like-btn"><i class="fa fa-thumbs-up"></i> </button>
+			        <button class="action-button dislike-btn"><i class="fa fa-thumbs-down"></i></button>
+					    <button class="action-button edit-btn">수정</button>
+					    <button class="action-button delete-btn">삭제</button>
+			      </div>
+			    </div>
+			    <i class="fa fa-ellipsis-v videos-icon comments-icon" ></i>
+			  </div>
+			</div>
+
+			
+			
+			</div>
+	</section>
+</body>
+</html>

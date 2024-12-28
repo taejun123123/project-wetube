@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layout.html}">
+<head>
+<meta charset="UTF-8">
+<title>Wetube</title>
+<link rel="stylesheet" href="/css/tap.css">
+<script>
+  // 폼 제출 전 검증
+  function validateForm() {
+    // 각 입력 필드 값 확인
+    const title = document.getElementById("title").value;
+    const content = document.getElementById("content").value;
+    const video = document.getElementById("video").files[0];
+
+    // 제목, 내용, 영상이 모두 비어있지 않은지 확인
+    if (!title || !content || !video) {
+      alert("모든 필드를 입력해야 합니다.");
+      return false;  // 폼 제출을 막음
+    }
+    return true;  // 모든 필드가 채워졌으면 폼 제출 허용
+  }
+
+  // 폼 데이터 전송 (AJAX)
+  async function submitForm(event) {
+    event.preventDefault();  // 기본 폼 제출 동작 막기
+
+    // URL에서 id 값 가져오기
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id'); 
+
+    // 폼 검증
+    if (!validateForm()) {
+      return;
+    }
+
+    // 폼 데이터 준비
+    const formData = new FormData();
+    formData.append("title", document.getElementById("title").value);
+    formData.append("content", document.getElementById("content").value);
+    formData.append("oldfile", document.getElementById("oldfile").value);
+    formData.append("video", document.getElementById("video").files[0]);
+    formData.append("id", id);  // URL에서 가져온 id 값 추가
+
+    // fetch를 사용하여 RESTful API로 POST 요청 보내기
+    try {
+      const response = await fetch('/api/videos', {
+        method: 'PUT',
+        body: formData
+      });
+
+      // 응답 처리
+      if (response.ok) {
+        alert("영상이 성공적으로 업로드되었습니다.");
+        // 업로드 후 다른 페이지로 리다이렉션 또는 후속 처리
+        window.location.href = '/watch?id=' + id;  // 예시: 영상 목록 페이지로 리다이렉트
+      } else {
+        alert("영상 업로드에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("Error uploading video:", error);
+      alert("영상 업로드 중 오류가 발생했습니다.");
+    }
+  }
+</script>
+</head>
+<body>
+<section layout:fragment="content">
+  <div class="container" style="margin-top: 30px;">
+    <h2>영상 수정 페이지</h2>
+    <form onsubmit="submitForm(event)" enctype="multipart/form-data">
+      <div class="form-group">
+        <label for="title">제목</label>
+        <input class="form-control" name="title" id="title" required placeholder="영상 제목을 입력하세요." th:value="${view.title}">
+      </div>
+      <input name="oldfile" id="oldfile" required type="hidden" th:value="${view.saved_path}">
+      <div class="form-group">
+        <label for="content">내용</label>
+        <textarea class="form-control" name="content" id="content" rows="7" required placeholder="영상 내용을 입력하세요." th:text="${view.content}"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="video">영상</label>
+        <input class="form-control" type="file" name="video" id="video" required accept="video/mp4,video/webm,video/ogg">
+      </div>
+      <button type="submit" class="btn btn-primary">수정</button>
+    </form>
+  </div>
+</section>
+</body>
+</html>
