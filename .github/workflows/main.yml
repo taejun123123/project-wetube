@@ -26,7 +26,7 @@ jobs:
         run: mvn clean install -DskipTests
         working-directory: wetube  # 'wetube' 디렉터리에서 Maven 빌드 실행
 
-      # 4. 빌드 결과물 패키징
+      # 4. 빌드 결과물 패키징 (확인된 파일 경로 사용)
       - name: Package application
         run: zip -r springBoot-deployment.zip target/*.jar
         working-directory: wetube  # 'wetube' 디렉터리에서 패키징 실행
@@ -49,4 +49,4 @@ jobs:
           environment_name: SpringBoot-env
           version_label: springBoot-v1-${{ github.run_number }}
           region: ap-northeast-2
-          deployment_package: springBoot-deployment.zip
+          deployment_package: wetube/springBoot-deployment.zip  # 패키징한 파일 경로 지정
