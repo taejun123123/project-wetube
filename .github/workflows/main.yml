@@ -24,16 +24,32 @@ jobs:
       # 3. Maven으로 빌드
       - name: Build with Maven
         run: mvn clean install -DskipTests
-        working-directory: wetube  # 프로젝트 루트 디렉터리 경로
+        working-directory: wetube  # Maven 빌드를 실행할 디렉터리 설정
 
-      # 4. Elastic Beanstalk 배포
+      # 4. 빌드 결과물 확인
+      - name: List build directory
+        run: ls -al wetube/target
+
+      # 5. 빌드 파일 이름 자동 감지
+      - name: Detect build artifact
+        run: echo "artifact=$(ls wetube/target/*.jar)" >> $GITHUB_ENV
+
+      # 6. AWS 자격 증명 설정
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      # 7. Elastic Beanstalk에 배포
       - name: Deploy to Elastic Beanstalk
         uses: einaregilsson/beanstalk-deploy@v20
         with:
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          application_name: wetube  # Elastic Beanstalk 애플리케이션 이름
-          environment_name: wetube-env  # Elastic Beanstalk 환경 이름
-          version_label: wetube-v1-${{ github.run_number }}  # 버전 관리
-          region: ap-northeast-2  # 서울 리전
-          deployment_package: wetube/target/*.jar  # 빌드된 JAR 파일 경로
+          application_name: wetube
+          environment_name: wetube-env
+          version_label: wetube-v1-${{ github.run_number }}
+          region: ap-northeast-2
+          deployment_package: ${{ env.artifact }}
