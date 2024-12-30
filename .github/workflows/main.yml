@@ -24,36 +24,37 @@ jobs:
       # 3. Maven으로 빌드
       - name: Build with Maven
         run: mvn clean install -DskipTests
-        working-directory: wetube  # 수정된 디렉터리 경로
+        working-directory: wetube
 
-      # 4. 빌드 결과물 저장
-      # - name: Save build artifact
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: wetube-artifact
-      #     path: wetube/target/*.jar
- 
-      # 5. 배포를 위한 패키징
-      # - name: Package for Elastic Beanstalk
-      #   run: zip -r wetube-deployment.zip target/*.jar
-      #   working-directory: wetube
+      # 4. 빌드 결과물 압축
+      - name: Package JAR file
+        run: zip -r wetube-deployment.zip target/*.jar
+        working-directory: wetube
 
-      # 6. AWS 자격 증명 설정
-      # - name: Configure AWS credentials
-      #   uses: aws-actions/configure-aws-credentials@v2
-      #   with:
-      #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      #     aws-region: ap-northeast-2
+      # 5. AWS 자격 증명 설정
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2  # AWS 리전 (서울 리전)
 
-      # 7. Elastic Beanstalk에 배포
-      # - name: Deploy to Elastic Beanstalk
-      #   run: |
-      #     aws elasticbeanstalk create-application-version \
-      #       --application-name wetube \
-      #       --version-label wetube-v1 \
-      #       --source-bundle S3Bucket=my-s3-bucket,S3Key=wetube-deployment.zip
+      # 6. S3에 배포 패키지 업로드
+      - name: Upload to S3
+        run: |
+          aws s3 cp wetube/wetube-deployment.zip s3://your-s3-bucket-name/wetube-deployment.zip
 
-      #     aws elasticbeanstalk update-environment \
-      #       --environment-name wetube-env \
-      #       --version-label wetube-v1
+      # 7. Elastic Beanstalk에 새로운 애플리케이션 버전 생성
+      - name: Create Elastic Beanstalk Application Version
+        run: |
+          aws elasticbeanstalk create-application-version \
+            --application-name wetube \
+            --version-label wetube-v1-${{ github.run_number }} \
+            --source-bundle S3Bucket=your-s3-bucket-name,S3Key=wetube-deployment.zip
+
+      # 8. Elastic Beanstalk 환경 업데이트
+      - name: Update Elastic Beanstalk Environment
+        run: |
+          aws elasticbeanstalk update-environment \
+            --environment-name wetube-env \
+            --version-label wetube-v1-${{ github.run_number }}
