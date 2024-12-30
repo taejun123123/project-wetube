@@ -32,7 +32,7 @@ jobs:
       #   with:
       #     name: wetube-artifact
       #     path: wetube/target/*.jar
-
+ 
       # 5. 배포를 위한 패키징
       # - name: Package for Elastic Beanstalk
       #   run: zip -r wetube-deployment.zip target/*.jar
