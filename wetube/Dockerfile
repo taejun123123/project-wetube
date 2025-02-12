@@ -12,10 +12,13 @@ COPY wetube/pom.xml .
 COPY wetube/src ./src
 
 # 5. Maven을 사용하여 빌드 (JAR 파일 생성)
-RUN mvn clean package -DskipTests && ls -al target
+RUN mvn clean package -DskipTests
+
 
 # 6. JAR 파일 복사
 COPY target/wetube-0.0.1-SNAPSHOT.jar app.jar
+
+RUN ls -al target/
 
 # 7. Spring Boot 애플리케이션 실행
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
