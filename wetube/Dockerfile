@@ -8,8 +8,8 @@ RUN apt-get update && apt-get install -y maven
 WORKDIR /app
 
 # 4. pom.xml과 src 디렉토리 복사
-COPY pom.xml .
-COPY src ./src
+COPY wetube/pom.xml .
+COPY wetube/src ./src
 
 # 5. Maven을 사용하여 빌드 (JAR 파일 생성)
 RUN mvn clean package -DskipTests
