@@ -15,7 +15,7 @@ COPY wetube/src ./src
 RUN mvn clean package -DskipTests && ls -al target
 
 # 6. JAR 파일 복사
-COPY target/*.jar app.jar
+COPY target/wetube-0.0.1-SNAPSHOT.jar app.jar
 
 # 7. Spring Boot 애플리케이션 실행
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
