@@ -12,7 +12,7 @@ COPY wetube/pom.xml .
 COPY wetube/src ./src
 
 # 5. Maven을 사용하여 빌드 (JAR 파일 생성)
-RUN mvn clean package -DskipTests
+RUN mvn clean package -DskipTests && ls -al target
 
 # 6. JAR 파일 복사
 COPY target/*.jar app.jar
