@@ -5,8 +5,8 @@ FROM openjdk:17-jdk-slim AS build
 WORKDIR /app
 
 # 3. Maven Wrapper 스크립트를 포함하여 Maven을 설치하고 프로젝트 파일 복사
-COPY wetube/pom.xml .
-COPY wetube/src ./src
+COPY src ./src
+COPY pom.xml .
 
 # 4. Maven을 사용하여 빌드 (JAR 파일 생성)
 RUN ./mvnw clean package -DskipTests
