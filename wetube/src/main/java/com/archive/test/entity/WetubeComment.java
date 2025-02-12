@@ -15,8 +15,7 @@ import lombok.Generated;
 @Entity
 public class WetubeComment {
   @Id
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "wetubeComment_seq")
-  @SequenceGenerator(name = "wetubeComment_seq", sequenceName = "WETUBECOMMENT_SEQ", allocationSize = 1)
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long commentId;
   
   @ManyToOne(fetch = FetchType.EAGER)

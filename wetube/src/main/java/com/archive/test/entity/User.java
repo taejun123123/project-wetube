@@ -25,8 +25,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User implements UserDetails {
   @Id
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "users_seq")
-  @SequenceGenerator(name = "users_seq", sequenceName = "USERS_SEQ", allocationSize = 1)
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "id", updatable = false)
   private Long id;
 
@@ -88,4 +87,5 @@ public class User implements UserDetails {
   public boolean isEnabled() {
     return true;
   }
+
 }
