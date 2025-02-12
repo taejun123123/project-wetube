@@ -1,4 +1,4 @@
-name: Java CI/CD Pipeline
+name: Java CI Pipeline
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - main  # main 브랜치에 푸시될 때 실행
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-22.04
 
     steps:
@@ -21,32 +21,7 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # 3. Maven으로 빌드 (working-directory 설정)
-      - name: Build with Maven
-        run: mvn clean install -DskipTests
-        working-directory: wetube  # 'wetube' 디렉터리에서 Maven 빌드 실행
-
-      # 4. 빌드 결과물 패키징 (확인된 파일 경로 사용)
-      - name: Package application
-        run: zip -r springBoot-deployment.zip target/*.jar
-        working-directory: wetube  # 'wetube' 디렉터리에서 패키징 실행
-
-      # 5. AWS 자격 증명 설정
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-northeast-2
-
-      # 6. Elastic Beanstalk에 배포
-      - name: Deploy to Elastic Beanstalk
-        uses: einaregilsson/beanstalk-deploy@v20
-        with:
-          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          application_name: springBoot
-          environment_name: SpringBoot-env
-          version_label: springBoot-v1-${{ github.run_number }}
-          region: ap-northeast-2
-          deployment_package: wetube/springBoot-deployment.zip  # 패키징한 파일 경로 지정
+      # 3. Maven으로 빌드 (Railway는 자체 배포하므로 테스트만 실행 가능)
+      - name: Build and Test with Maven
+        run: mvn clean install
+        working-directory: wetube  # 'wetube' 디렉터리에서 빌드 실행
