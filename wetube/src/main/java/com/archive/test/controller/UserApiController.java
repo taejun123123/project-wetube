@@ -30,11 +30,14 @@ public class UserApiController {
     this.userService = userService;
   }
   
-  @PostMapping({"/user"})
-  public String signup(AddUserRequest request, @RequestParam("profile") MultipartFile files) throws IOException {
+@PostMapping("/user")
+public String signup(AddUserRequest request, @RequestParam("profile") MultipartFile files) throws IOException {
+    log.info("회원가입 요청: {}", request);
+    log.info("업로드된 파일: {}", (files != null) ? files.getOriginalFilename() : "없음");
+
     this.userService.save(request, files);
-    return "redirect:User/login";
-  }
+    return "redirect:/login";
+}
   
   @PostMapping({"/login"})
   public HttpEntity<?> login(@RequestBody AddUserRequest request, Errors error) throws BadRequestException {
