@@ -17,36 +17,30 @@ public class ImageHandler {
   private static final Logger log = LogManager.getLogger(com.archive.test.dto.hendler.ImageHandler.class);
 
   // 로컬 개발 환경에서 테스트할 때
-  private static final String LOCAL_UPLOAD_PATH = "src/main/resources/static/upload";
+  private static final String LOCAL_UPLOAD_PATH = "C:\\study\\wetubeTest\\src\\main\\resources\\static\\upload";
   // 서버에서는 외부 경로로 설정
-  private static final String SERVER_UPLOAD_PATH = "src/main/resources/static/upload"; // 서버 경로 수정
-
-  // 로컬 환경과 서버 환경에 따른 경로 설정
-  private String getUploadPath() {
-    // 여기에서 환경 변수를 읽어와서 개발 환경과 서버 환경을 구분하도록 설정
-    boolean isProduction = System.getenv("ENV") != null && System.getenv("ENV").equals("production");
-    return isProduction ? SERVER_UPLOAD_PATH : LOCAL_UPLOAD_PATH;
-  }
+  private static final String SERVER_UPLOAD_PATH = "/var/www/uploads"; // 서버에 맞는 경로로 수정
 
   public String save(MultipartFile image) throws IOException {
     String fileName = getOriginName(image);
-    String uploadPath = getUploadPath();
-    Path fullPath = Paths.get(uploadPath, fileName); // `static/upload` 경로 사용
+    Path fullPath = Paths.get(SERVER_UPLOAD_PATH, fileName); // 서버 경로 사용
     Files.createDirectories(fullPath.getParent(), (FileAttribute<?>[])new FileAttribute[0]);
     image.transferTo(fullPath.toFile());
     log.info("File saved at: {}", fullPath.toString());
     return fullPath.toString();
   }
 
-  public String saveImage(MultipartFile image) throws IOException {
-    String fileName = getOriginName(image);
-    String uploadPath = getUploadPath();
-    Path fullPath = Paths.get(uploadPath, fileName); // `static/upload` 경로 사용
-    Files.createDirectories(fullPath.getParent(), (FileAttribute<?>[])new FileAttribute[0]);
-    image.transferTo(fullPath.toFile());
-    log.info("File saved at: {}", fullPath.toString());
-    return fullPath.toString();
-  }
+public String saveImage(MultipartFile image) throws IOException {
+    String fileName = image.getOriginalFilename();
+    Path serverPath = Paths.get(SERVER_UPLOAD_PATH, fileName);  // 서버 경로에 저장
+    String webPath = "/upload/" + fileName;  // 웹에서 접근할 경로
+
+    Files.createDirectories(serverPath.getParent());  // 디렉토리 생성
+    image.transferTo(serverPath.toFile());  // 파일 저장
+
+    log.info("File saved at: {}", serverPath.toString());
+    return webPath;  // 웹 경로를 리턴
+}
 
   private String getOriginName(MultipartFile image) {
     return image.getOriginalFilename();
@@ -54,8 +48,7 @@ public class ImageHandler {
 
   public boolean deleteFile(String oldFile) {
     String fileName = oldFile.replace("/upload/", "");
-    String uploadPath = getUploadPath();
-    Path filePath = Paths.get(uploadPath, fileName); // `static/upload` 경로 사용
+    Path filePath = Paths.get(SERVER_UPLOAD_PATH, fileName); // 서버 경로 사용
     try {
       if (Files.exists(filePath)) {
         Files.delete(filePath);
