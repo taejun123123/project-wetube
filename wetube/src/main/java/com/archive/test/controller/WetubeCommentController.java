@@ -2,6 +2,7 @@ package com.archive.test.controller;
 
 
 import com.archive.test.dto.AddCommentRequest;
+import com.archive.test.dto.CommentResponse;
 import com.archive.test.dto.LikeDislikeRequest;
 import com.archive.test.entity.WetubeComment;
 import com.archive.test.service.WetubeCommentService;
@@ -48,9 +49,13 @@ public class WetubeCommentController {
   }
   
   @GetMapping({"/list"})
-  public List<WetubeComment> getComments(@RequestParam Long id) {
-    return this.commentService.getComments(id);
+  public List<CommentResponse> getComments() {
+      return commentService.getComments()
+              .stream()
+              .map(CommentResponse::new)
+              .toList();
   }
+
   
   @PutMapping({"/update/{id}"})
   public WetubeComment updateComment(@PathVariable Long id, @RequestBody AddCommentRequest request) {

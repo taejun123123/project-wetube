@@ -31,19 +31,19 @@ public class WebApiController {
   private final WetubeService service;
   
   @PostMapping
-  private ResponseEntity<String> createVideo(@RequestParam("title") String title, @RequestParam("content") String content, @RequestParam("id") Long id, @RequestParam("video") MultipartFile video) throws IOException {
+  public ResponseEntity<String> createVideo(@RequestParam("title") String title, @RequestParam("content") String content, @RequestParam("id") Long id, @RequestParam("video") MultipartFile video) throws IOException {
     this.service.saveVideo(video, title, content, id);
     return ResponseEntity.ok("완료");
   }
   
   @PutMapping
-  private ResponseEntity<String> updateVideo(@RequestParam("title") String title, @RequestParam("content") String content, @RequestParam("oldfile") String oldfile, @RequestParam("id") Long id, @RequestParam("video") MultipartFile video) throws IOException {
+  public ResponseEntity<String> updateVideo(@RequestParam("title") String title, @RequestParam("content") String content, @RequestParam("oldfile") String oldfile, @RequestParam("id") Long id, @RequestParam("video") MultipartFile video) throws IOException {
     this.service.update(id, title, content, video, oldfile);
     return ResponseEntity.ok("완료");
   }
   
   @DeleteMapping
-  private ResponseEntity<String> deleteVideo(@RequestBody WetubeDeleteRequest request) {
+  public ResponseEntity<String> deleteVideo(@RequestBody WetubeDeleteRequest request) {
     this.service.delete(request.getId().longValue());
     return ResponseEntity.ok("완료");
   }

@@ -10,11 +10,11 @@ import org.springframework.data.jpa.repository.Query;
 public interface WetubeRepository extends JpaRepository<Wetube, Long> {
   List<Wetube> findByTitleContainingIgnoreCase(String paramString);
   
-  @Query("SELECT w FROM Wetube w ORDER BY w.id DESC")
+  @Query("SELECT w FROM Wetube w WHERE w.user.id = :paramLong ORDER BY w.id DESC")
   List<Wetube> findByUserId(Long paramLong);
-  
-  @Query("SELECT w FROM Wetube w ORDER BY w.hit DESC")
+
+  @Query("SELECT w FROM Wetube w WHERE w.user.id = :paramLong ORDER BY w.hit DESC")
   List<Wetube> findByUserIdHit(Long paramLong);
-  
+
   Optional<Wetube> findFirstByUser_Id(Long paramLong);
 }

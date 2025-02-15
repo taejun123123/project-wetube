@@ -18,7 +18,7 @@ public class ImageHandler {
   private static final Logger log = LogManager.getLogger(com.archive.test.dto.hendler.ImageHandler.class);
   public String save(MultipartFile image) throws IOException {
     String fileName = getOriginName(image);
-    Path fullPath = Paths.get("C:\\study\\wetube\\src\\main\\resources\\static\\video", new String[] { fileName });
+    Path fullPath = Paths.get("C:\\study\\wetubeTest\\src\\main\\resources\\static\\video", new String[] { fileName });
     Files.createDirectories(fullPath.getParent(), (FileAttribute<?>[])new FileAttribute[0]);
     image.transferTo(fullPath.toFile());
     log.info("File saved at: {}", fullPath.toString());
@@ -26,7 +26,7 @@ public class ImageHandler {
   }
   public String saveImage(MultipartFile image) throws IOException {
 	  String fileName = getOriginName(image);
-	  Path fullPath = Paths.get("C:\\study\\wetube\\src\\main\\resources\\static\\upload", new String[] { fileName });
+	  Path fullPath = Paths.get("C:\\study\\wetubeTest\\src\\main\\resources\\static\\upload", new String[] { fileName });
 	  Files.createDirectories(fullPath.getParent(), (FileAttribute<?>[])new FileAttribute[0]);
 	  image.transferTo(fullPath.toFile());
 	  log.info("File saved at: {}", fullPath.toString());
