@@ -33,7 +33,7 @@ public class UserApiController {
   @PostMapping({"/user"})
   public String signup(AddUserRequest request, @RequestParam("profile") MultipartFile files) throws IOException {
     this.userService.save(request, files);
-    return "redirect:login";
+    return "redirect:User/login";
   }
   
   @PostMapping({"/login"})
