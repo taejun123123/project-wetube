@@ -37,21 +37,21 @@ public class UserService {
     this.imageHandler = imageHandler;
   }
   
-  public Long save(AddUserRequest dto, MultipartFile files) throws IOException {
-    String fileName = files.getOriginalFilename();
-    this.imageHandler.saveImage(files);
-    String webPath = "/upload/" + fileName;
-    if (this.userRepository.existsByEmail(dto.getEmail()))
-      throw new IllegalArgumentException("이메일이 중복 되고 있습니다."); 
-    if (this.userRepository.existsByNickname(dto.getNickname()))
-      throw new IllegalArgumentException("닉네임이 중복되고 있습니다."); 
-    return ((User)this.userRepository.save(User.builder()
+public Long save(AddUserRequest dto, MultipartFile files) throws IOException {
+    String webPath = imageHandler.saveImage(files);  // 웹 경로 받기
+    if (this.userRepository.existsByEmail(dto.getEmail())) 
+        throw new IllegalArgumentException("이메일이 중복 되고 있습니다.");
+    if (this.userRepository.existsByNickname(dto.getNickname())) 
+        throw new IllegalArgumentException("닉네임이 중복되고 있습니다.");
+    
+    return this.userRepository.save(User.builder()
         .email(dto.getEmail())
         .nickname(dto.getNickname())
-        .profile(webPath)
+        .profile(webPath)  // DB에 저장된 경로
         .password(this.bCryptPasswordEncoder.encode(dto.getPassword()))
-        .build())).getId();
-  }
+        .build()).getId();
+}
+
   
   public User findById(Long userId) {
     return (User)this.userRepository.findById(userId)
